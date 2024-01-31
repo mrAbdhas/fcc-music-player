@@ -86,6 +86,82 @@ const allSongs = [
 /* new Audio(). This will create a new HTML5 audio element. */
 const audio = new Audio();
 
+/*function playSong, takes id parameter,
+id represent unique identifier of the 
+song one wants played
+function using the
+arrow function syntax*/
+const playSong = (id) => {
+
+  /*Use const to create a variable named 
+  song and assign it result of the find()
+  method call on the userData?.songs array. 
+  Use song as the parameter of the find() 
+  callback and check if song.id is strictly equal to id.
+
+  This will iterate through the userData?.songs array,
+  searching for a song that corresponds to the id 
+  passed into the playSong function. */
+  const song = userData?.songs.find((song) => song.id === id);
+  //
+
+  /* This tells the audio element where to find the audio data for the selected song. */
+  audio.src = song.src;
+  //
+
+  /* This tells the audio element what to display as the title of the song. */
+  audio.title = song.title;
+  //
+
+  /*Before playing the song, you need to make sure it starts from the beginning.
+  This can be achieved by the use of the currentTime property of the audio object.
+  an if statement, to check wether the userData?.currentSong is null
+  or userData?.currentSong.id is strictly not equal to song.id*/
+  if(userData?.currentSong === null || userData?.currentSong.id !== song.id) {
+    audio.currentTime = 0;
+    //
+    /*else block to handle the current song's position in the playlist */
+  } else {
+    audio.currentTime = userData?.songCurrentTime;
+  }
+
+  /*update the current song being played as well as the appearance of 
+  the playButton element. Start by accessing the userData object and 
+  its currentSong property. Set its value equal to the song variable.
+  */
+  userData.currentSong = song;
+  /*Next use classList property and the add() method to add
+  the playing class to the playButton element. This will look
+  for the class playing in the CSS file and add it to the 
+  playButton element. */
+  playButton.classList.add("playing");
+  //
+  /*To play the song use the play() method on the audio variable.
+  play() is a method from the web audio API for playing an mp3 file.*/
+  audio.play();
+  
+}
+//
+
+/*function for pausing currently playing songs */
+const pauseSong = () => {
+  /*to store the current time of the song when it's paused */
+  userData.songCurrentTime = audio.currentTime;
+  //
+
+  /*using classList and remove() method to remove
+  .play class from the playButton, since the song will
+  be pause */
+  playButton.classList.remove("playing");
+  //
+
+  /* to pause the song, using the pause() method
+  on the audio variable. pause() is of Web Audio API*/
+  audio.pause();
+
+}
+//
+
 
 /* a userData object that will contain the songs, 
 the current song playing, and the time of the current song. */
@@ -120,7 +196,7 @@ const renderSongs = (array) => {
 
  return `
       <li id="song-${song.id}" class="playlist-song">
-      <button class="playlist-song-info">
+      <button class="playlist-song-info" onclick="playSong(${song.id})">
           <span class="playlist-song-title">${song.title}</span>
           <span class="playlist-song-artist">${song.artist}</span>
           <span class="playlist-song-duration">${song.duration}</span>
@@ -144,6 +220,36 @@ const renderSongs = (array) => {
     playlistSongs.innerHTML = songsHTML;
   //
 };
+//
+
+/*Event listener,
+with event type "", and callback function */
+/*` a `click` event for the first argument 
+and an empty callback function with arrow syntax for the second argument. */
+playButton.addEventListener("click", () => {
+  /*if statement, check if userData?.currentSong is null */
+  if(userData?.currentSong === null) {
+    
+    /*calling playSong() function with the id of the
+    first song in the userData?.songs arrayy */
+    playSong(userData?.songs[0].id);
+    /* Optional chaining (?.) helps prevent errors
+      when accessing nested properties that might
+      be null or undefined. */
+    //
+  } else {
+    /*calling the playSong function with the id of the currently
+    playing song as an argument
+    This ensures that the currently playing song will continue 
+    to play when the play button is clicked. */
+    playSong(userData?.currentSong.id);
+  }
+})
+//
+
+/*Event listener for pauseSong function */
+pauseButton.addEventListener("click", pauseSong);
+//
 
 
 /* when you call the renderSongs function,
@@ -154,8 +260,24 @@ will loop through the array and build HTML for all the songs */
 and pass in userData?.songs in order to finally
 display the songs in the UI. */
 
+/*To sort the songs in alphabetical order by title,
+you will need to pass in a compare callback function into your sort() method. */
 
-renderSongs(userData?.songs);
+/*The reason why is returning numbers is because the sort() method
+is expecting a number to be returned. If you return a negative number,
+the first item is sorted before the second item. */
+renderSongs(userData?.songs.sort((a, b) => {
+  if(a.title < b.title) {
+    return -1;
+  }
+
+  if(a.title > b.title) {
+    return 1;
+  }
+
+  return 0;
+
+}));
 /* Optional chaining (?.) helps prevent errors
 when accessing nested properties that might
 be null or undefined. */
