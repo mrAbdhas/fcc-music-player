@@ -136,6 +136,9 @@ const playSong = (id) => {
   playButton element. */
   playButton.classList.add("playing");
   //
+  /*highlight function that highlights currently playing song */
+  highlightCurrentSong();
+  //
   /*To play the song use the play() method on the audio variable.
   play() is a method from the web audio API for playing an mp3 file.*/
   audio.play();
@@ -158,10 +161,106 @@ const pauseSong = () => {
   /* to pause the song, using the pause() method
   on the audio variable. pause() is of Web Audio API*/
   audio.pause();
+  /*last step, hook up pauseSong() function
+  to an event listener  to pauseButton element*/
 
 }
 //
 
+/*function playNextSong using const and arrow syntax*/
+const playNextSong = () => {
+  /*This will check if there's no current song 
+   * playing in the userData object. */
+  if(userData?.currentSong === null) {
+    /*if the condition in the if statement
+    is true, we call the playSong() function
+    with the id of the first song in
+    userData?.songs array as an argument */
+    playSong(userData?.songs[0].id);
+  } else {
+    const currentSongIndex = getCurrentSongIndex();
+    /*next we retrieve the next song in the playlist
+    by getting the index of the current song and
+    then add 1 to it. */
+    const nextSong = userData?.songs[currentSongIndex + 1];
+    /*lastly we call the playSong() function and 
+    pass nextSong.id as argument. */
+    playSong(nextSong.id);
+    /*last step, hook up playNextSong() function
+    to an event listener  to nextButton element*/
+  }
+}
+//
+
+/* function playPreviousSong() using const and arrow syntax*/
+const playPreviousSong = () => {
+  /*if statement, will check if there is
+  currently no song playing */
+  /*if the is no song being play, meaning
+  the condition of the if statement is true
+  exit the using return */
+  if(userData?.currentSong === null) return;
+  else {
+    const currentSongIndex = getCurrentSongIndex();
+    /*next we retrieve the previous song in the
+    playlist by substraction 1 from currentSongIndex
+    and save it in a variable previousSong */
+    const previousSong = userData?.songs[currentSongIndex -1];
+    /*next we call playSong() function with the
+    retrieved previous song that we saved in the 
+    variable previousSong and pass it as
+    an argument in the playSong() function call*/
+    playSong(previousSong.id);
+    /*last step, hook up playPreviousSong() to 
+    an event listener to previousButton element*/
+  }
+}
+//
+
+/*function that displays the current song
+title and artist in the player display.
+Function is created with const and arrow syntax */
+const setPlayerDisplay = () => {
+  /*references to HTML elements responsible for
+  displaying the song title and artist. we
+  obtain reference by getElementById() method*/
+  const playingSong = document.getElementById("player-song-title");
+  const songArtist = document.getElementById("player-song-artist");
+  /*we acces the current song's title being played */
+  const currentTitle = userData?.currentSong?.title;
+  /*we acces the current song's artist being played */
+  const currentArtist = userData?.currentSong?.artist;
+}
+
+/*function that highlights current song 
+being played, using const and arrow syntax*/
+const highlightCurrentSong = () => {
+  /*using querySelectorAlll() method to 
+  select list element with the class playlist-song, that
+  contains the songs in the playlist and assigning them 
+  to variable playlistSongElement */
+  const playlistSongElements = document.querySelectorAll(".playlist-song");
+  /*getting the id of the currently playing song, and use
+  template literals to prefix it with song- */
+  const songToHighlight = document.getElementById(`song-${userData?.currentSong?.id}`);
+  /*Loop/iterate throgh playListSongElements using forEach() method
+  and pass songEl as the parameter we use arrow syntax to add
+  a call back function*/
+  playlistSongElements.forEach((songEl) => {
+    /*use the removeAttribute() method to remove the
+    "aria-current" attribute. This will remove the
+    attribute for each of the songs. */
+    songEl.removeAttribute("aria-current");
+  })
+  /*Now we need to add the attribute back to the currently
+  playing song.*/
+  if(songToHighlight) {
+    songToHighlight.setAttribute("aria-current", "true");
+  }
+  /*lastly call this function inside the playSong() function */
+
+}
+//
 
 /* a userData object that will contain the songs, 
 the current song playing, and the time of the current song. */
@@ -222,10 +321,23 @@ const renderSongs = (array) => {
 };
 //
 
-/*Event listener,
+/*function getCurrentSongIndex using the arrow syntax
+Arrow function 
+this function will be used in playNextSong and playPreviousSong
+this function will get the index of each song in the songs property of userData. */
+const getCurrentSongIndex = () => {
+  /*use indexOf() array method, to get the index of
+  current song, it returns first index of given element 
+  can be found in the array or -1 if the element is not
+  present */
+  return userData?.songs.indexOf(userData?.currentSong);
+
+}
+
+/*Event listener for playButton element,
 with event type "", and callback function */
 /*` a `click` event for the first argument 
-and an empty callback function with arrow syntax for the second argument. */
+and an  callback function with arrow syntax for the second argument. */
 playButton.addEventListener("click", () => {
   /*if statement, check if userData?.currentSong is null */
   if(userData?.currentSong === null) {
@@ -247,9 +359,21 @@ playButton.addEventListener("click", () => {
 })
 //
 
-/*Event listener for pauseSong function */
+/*Event listener for pauseButton element with
+pauseSong function passed as the second argument */
 pauseButton.addEventListener("click", pauseSong);
 //
+
+/*Evemt listener for nextButton element, with
+playNextSong() function passed as the second argument
+with event type "", and callback function */
+nextButton.addEventListener("click", playNextSong);
+//
+
+/*Evemt listener for nextButton element, with
+ playPreviousSong()  function passed as the second argument
+with event type "", and callback function */
+previousButton.addEventListener("click", playPreviousSong);
 
 
 /* when you call the renderSongs function,
