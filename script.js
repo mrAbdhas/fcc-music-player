@@ -136,9 +136,15 @@ const playSong = (id) => {
   playButton element. */
   playButton.classList.add("playing");
   //
-  /*highlight function that highlights currently playing song */
+  /*highlight function call, that highlights currently playing song */
   highlightCurrentSong();
   //
+  /*setPlayerDisplay() function call, the player's display updates 
+  whenever a new song begins playing  */
+  setPlayerDisplay();
+  //
+  /*setPlayButtonAccessibleText() function call*/
+  setPlayButtonAccessibleText();
   /*To play the song use the play() method on the audio variable.
   play() is a method from the web audio API for playing an mp3 file.*/
   audio.play();
@@ -217,6 +223,128 @@ const playPreviousSong = () => {
 }
 //
 
+/*function shuffle, created with const and arrow syntax
+this function is responsible for shuffling the songs
+in the playlist array and performing nesssary state management 
+update after shuffling*/
+const shuffle = () => {
+  /*using sort() method with callback funtion
+  to randomize playlist array userData.songs */
+  userData?.songs.sort(() => Math.random() - 0.5) 
+  /*One way to randomize an array of items would 
+  be to subtract 0.5 from Math.random() which 
+  produces random values that are either positive
+  or negative. This makes the comparison result
+  a mix of positive and negative values, leading
+  to a random ordering of elements. */
+  //
+
+  /*when shuffle button is pressed/clicked
+  currentSong have to be set to null and and
+  songCurrentTime to 0 */
+  /* Note: You should not use optional chaining (.?)
+  for this step because you are explicitly setting 
+  the currentSong and songCurrentTime properties to be
+  null and 0 respectively. */
+  userData.currentSong = null;
+  userData.songCurrentTime = 0;
+
+  /*function calls */
+  /*we re-render the songs, by calling 
+  renderSongs() function, we pass it userData?.songs*/
+  renderSongs(userData?.songs);
+  /*we pause the currently playing song
+  by calling pauseSong() function */
+  pauseSong();
+  /*we set the player display by calling
+  setPlayerDisplay() function */
+  setPlayerDisplay();
+  /*and we set the play button accessible
+  text again */
+  setPlayButtonAccessibleText();
+  //
+
+  /*lastly hook shuffle() function to an 
+  event listener to shuffleButton element */
+}
+//
+
+/*function deleteSong() this function handles
+removal of a song from playlist and creates 
+a Reset Playlist button
+function created with const and arrow
+syntax, and passed id as a parameter*/
+const deleteSong = (id) => {
+  /* we use filter() metod to remove the
+  song object that matches the id parameter from
+  the userData?.songs array. 
+  we do it by using the filter() method on 
+  userData?.songs array, we pass song as an the
+  parameter of the arrow function callback.
+  and use implicit return to check
+  if song.id is strictly not equal to id.
+  and assign it to userData.songs.
+  this will remove a song with an id, since
+  all the songs object have an id.
+  we will have to specify which song
+  we want to remove from the playlist*/
+  userData.songs = userData?.songs.filter((song) => song.id !== id);
+
+  /*function calls */
+  /*we re-render the songs by calling
+  renderSongs() function, and pass it userData?.songs
+  this display the modified playlist*/
+  renderSongs(userData?.songs);
+  /*we call highlightCurrentSong() function to highlight
+  the current song, if there is any playing*/
+  highlightCurrentSong();
+  /*and we set the play button accessible
+  text */
+  setPlayButtonAccessibleText();
+
+  /*before we delete a song, we check if there
+  is a song playing, if its then pause it, and
+  play the next song in the playlist
+  we use an if statement to check if the 
+  userData?.currentSong?.id is strictly equal
+  to the id of the song we want to delete ?*/
+  if(userData?.currentSong?.id === id ) {
+    /*if the condition in the if statement is
+    met, and there is a match*/
+    /*we update the current song being played, we  
+    start by accessing the userData object and 
+    its currentSong property, and set its value equal null.
+    and we for songCurrentTime, we set its value to 0.*/
+    userData.currentSong = null;
+    userData.songCurrentTime = 0;
+    
+    /*function calls, to stop and update player display*/
+    /*we call puaseSong() function to stop the playback*/
+    pauseSong();
+    /*we call setPlayDisplay() function to update the
+    player display*/
+    setPlayerDisplay();
+    //
+
+    /*next we add onclick attribute within the button
+    element in the renderSongs() function */
+    //
+
+    /*next we check if the playlist is empty, if its
+    we reset the userData object to its original state*/
+    if(userData?.songs.length === 0) {
+      /*if the condition is met, means userData object
+      is empty, we create resetButton element and a text for it
+      button will only show if playlist is empty*/
+      const resetButton = document.createElement("button");
+      /*we assign a text to the above create resetButton*/
+      const resetText = document.createTextNode("Reset Playlist");
+
+    }
+  }
+
+}
+
 /*function that displays the current song
 title and artist in the player display.
 Function is created with const and arrow syntax */
@@ -230,6 +358,21 @@ const setPlayerDisplay = () => {
   const currentTitle = userData?.currentSong?.title;
   /*we acces the current song's artist being played */
   const currentArtist = userData?.currentSong?.artist;
+  /*we use textContent to set the text content
+  of HTML element, player-song-title & player-song-artist
+  we assigned to the variables PlayingSong & songArtist,
+  to the current playing song title and artist name. 
+  using ternary operator to check if currentTitle is truthy
+  if so, implicitly  return currentTitle, otherwise implicitly
+  return an empty string, Assign this result to playingSong.textContent.
+  syntax: condition ? exprIfTrue : exprIfFalse */
+  playingSong.textContent = currentTitle ? currentTitle : "";
+  /* using ternary operator to check if currentArtist is truthy
+  if so, implicitly  return currentTitle, otherwise implicitly
+  return an empty string, Assign this result to songArtist.textContent.*/
+  songArtist.textContent = currentArtist ? currentArtist : "";
+   /*lastly call this function inside the playSong() function
+   and the player's display updates whenever a new song begins playing */
 }
 
 /*function that highlights current song 
@@ -295,7 +438,7 @@ const renderSongs = (array) => {
 
  return `
       <li id="song-${song.id}" class="playlist-song">
-      <button class="playlist-song-info" onclick="playSong(${song.id})">
+      <button class="playlist-song-info" onclick="playSong(${song.id})" onclick="deleteSong(${song.id})">
           <span class="playlist-song-title">${song.title}</span>
           <span class="playlist-song-artist">${song.artist}</span>
           <span class="playlist-song-duration">${song.duration}</span>
@@ -320,6 +463,31 @@ const renderSongs = (array) => {
   //
 };
 //
+
+/*function setPlayButtonAccessibleText() will
+set aria-label attribute to current song, or
+the first song in playlist, if empty, it's
+the aria-label to "Play" */
+const setPlayButtonAccessibleText = () => {
+  /*we access and get the current song or || the first song
+  userData array */
+  const song = userData?.currentSong || userData?.songs[0];
+  /*we use setAttribute() method, the method takes 2 parameters,
+  a setAttribute("name", "value"), name = a string specifying the 
+  name of the attribute whose value is to be set.
+  value = a string containing the value to be assign to the 
+  attribute. on playButton, to set the aria-label attribute
+  and assign it a value, we use ternary operator:
+  syntax: condition ? exprIfTrue : exprIfFalse 
+  condition, we check if there is song?.title,
+  if its truthy, aria-label value is set to "play ${song.title}
+  or "Play" if there is no song.title available.*/
+  playButton.setAttribute(
+    "aria-label",
+    song?.title ? `Play ${song.title}` : "Play" 
+  );
+  /*lastly call this function inside the playSong() function */
+}
 
 /*function getCurrentSongIndex using the arrow syntax
 Arrow function 
@@ -360,20 +528,37 @@ playButton.addEventListener("click", () => {
 //
 
 /*Event listener for pauseButton element with
-pauseSong function passed as the second argument */
+pauseSong function passed as the listener */
 pauseButton.addEventListener("click", pauseSong);
 //
 
 /*Evemt listener for nextButton element, with
 playNextSong() function passed as the second argument
-with event type "", and callback function */
+with event type "", and and listener 
+syntax: .addEventListener(type, listener)
+listener must be either a null, an object with a
+handleEvent() method or a JavaScript funtion
+in this case, its a javaScript function  */
 nextButton.addEventListener("click", playNextSong);
 //
 
 /*Evemt listener for nextButton element, with
  playPreviousSong()  function passed as the second argument
-with event type "", and callback function */
+with event type "", and listener 
+syntax: .addEventListener(type, listener)
+listener must be either a null, an object with a
+handleEvent() method or a JavaScript funtion
+in this case, its a javaScript function */
 previousButton.addEventListener("click", playPreviousSong);
+//
+
+/*Event listener for shuffleButton element with
+shuffle() function passed as listener 
+syntax: .addEventListener(type, listener)
+listener must be either a null, an object with a
+handleEvent() method or a JavaScript funtion
+in this case, its a javaScript function */
+shuffleButton.addEventListener("click", shuffle);
 
 
 /* when you call the renderSongs function,
