@@ -83,8 +83,28 @@ const allSongs = [
 
 
 ];
+
 /* new Audio(). This will create a new HTML5 audio element. */
 const audio = new Audio();
+
+/* a userData object that will contain the songs, 
+the current song playing, and the time of the current song. */
+
+/* users will be able to shuffle and delete 
+songs from the playlist, you will need to 
+create a copy of the allSongs array without
+mutating the original. This is where the
+spread operator comes in handy.
+The spread operator [...] allows you to
+copy all elements from one array into
+another. It can also be used to
+concatenate multiple arrays into one. */
+let userData = {
+  songs: [...allSongs],
+  currentSong: null,
+  songCurrentTime: 0,
+};
+//
 
 /*function playSong, takes id parameter,
 id represent unique identifier of the 
@@ -275,6 +295,33 @@ a Reset Playlist button
 function created with const and arrow
 syntax, and passed id as a parameter*/
 const deleteSong = (id) => {
+  /*before we delete a song, we check if there
+  is a song playing, if its then pause it, and
+  play the next song in the playlist
+  we use an if statement to check if the 
+  userData?.currentSong?.id is strictly equal
+  to the id of the song we want to delete ?*/
+  if(userData?.currentSong?.id === id ) {
+    /*if the condition in the if statement is
+    met, and there is a match*/
+    /*we update the current song being played, we  
+    start by accessing the userData object and 
+    its currentSong property, and set its value equal null.
+    and we for songCurrentTime, we set its value to 0.*/
+    userData.currentSong = null;
+    userData.songCurrentTime = 0;
+    
+    /*function calls, to stop and update player display*/
+    /*we call puaseSong() function to stop the playback*/
+    pauseSong();
+    /*we call setPlayDisplay() function to update the
+    player display*/
+    setPlayerDisplay();
+    //
+    /*next we add onclick attribute within the button
+    element in the renderSongs() function */
+  
+  }
   /* we use filter() metod to remove the
   song object that matches the id parameter from
   the userData?.songs array. 
@@ -302,48 +349,64 @@ const deleteSong = (id) => {
   text */
   setPlayButtonAccessibleText();
 
-  /*before we delete a song, we check if there
-  is a song playing, if its then pause it, and
-  play the next song in the playlist
-  we use an if statement to check if the 
-  userData?.currentSong?.id is strictly equal
-  to the id of the song we want to delete ?*/
-  if(userData?.currentSong?.id === id ) {
-    /*if the condition in the if statement is
-    met, and there is a match*/
-    /*we update the current song being played, we  
-    start by accessing the userData object and 
-    its currentSong property, and set its value equal null.
-    and we for songCurrentTime, we set its value to 0.*/
-    userData.currentSong = null;
-    userData.songCurrentTime = 0;
+  /*next we check if the playlist is empty, if its
+  we reset the userData object to its original state*/
+  if(userData?.songs.length === 0) {
+    /*if the condition is met, means userData object
+    is empty, we create resetButton element and a text for it.
+    button will only show if playlist is empty
+    we call .createElement() DOM method, we use
+    dynamically to create an element in JavaScript
+    Syntax: document.createElement(tagName)
+    pass tagName as a string*/
+    const resetButton = document.createElement("button");
+    /*we assign a text to the above created resetButton*/
+    const resetText = document.createTextNode("Reset Playlist");
+    /*we set the id and ariaLabel for resetButton
+    with JavaScript, element.id and element.arialabel
+    setting the id property for resetButton
+    syntax: element.id = "id"; */
+    resetButton.id = "reset";
+    /*next we set aria-label with JavaScript element.ariaLabel
+    syntax: element.ariaLabel = ""; */
+    resetButton.ariaLabel = "Reset playlist";
     
-    /*function calls, to stop and update player display*/
-    /*we call puaseSong() function to stop the playback*/
-    pauseSong();
-    /*we call setPlayDisplay() function to update the
-    player display*/
-    setPlayerDisplay();
-    //
+    /*we add resetText to the resetButton as a child
+    by using apendChild() method, we can add a node or and
+    element as a child of another element.
+    we start by adding the resetText to the resetButton
+    syntax: element.appendChild(element or node);*/
+    resetButton.appendChild(resetText);
+    /*next we add the resetButton element to the playlistSongs element
+    syntax: element.appendChild(element);*/
+    playlistSongs.appendChild(resetButton);
+    
+    /*we add functionality to the resetButton when its clicked
+    by adding a event listener, we pass it a callback
+    function with arrow syntax*/
+    resetButton.addEventListener("click", () => {
+      /*reset playlist to its original state
+      by spread allSongs array into an array
+      and assign to userData.songs
+      The spread operator [...] allows you to
+      copy all elements from one array into
+      another. It can also be used to
+      concatenate multiple arrays into one.*/
+      userData.songs = [...allSongs];
 
-    /*next we add onclick attribute within the button
-    element in the renderSongs() function */
-    //
-
-    /*next we check if the playlist is empty, if its
-    we reset the userData object to its original state*/
-    if(userData?.songs.length === 0) {
-      /*if the condition is met, means userData object
-      is empty, we create resetButton element and a text for it
-      button will only show if playlist is empty*/
-      const resetButton = document.createElement("button");
-      /*we assign a text to the above create resetButton*/
-      const resetText = document.createTextNode("Reset Playlist");
-
-    }
+      /*functions call*/
+      /*render the songs again*/
+      renderSongs(userData?.songs);
+      /*updating the play button's accessible text*/
+      setPlayButtonAccessibleText();
+      /*removing the reset button from the playlist
+      by calling the remove() method on resetButton variable*/
+      resetButton.remove();
+    });
+  
   }
-
-}
+  
+};
 
 /*function that displays the current song
 title and artist in the player display.
@@ -405,24 +468,7 @@ const highlightCurrentSong = () => {
 }
 //
 
-/* a userData object that will contain the songs, 
-the current song playing, and the time of the current song. */
 
-/* users will be able to shuffle and delete 
-songs from the playlist, you will need to 
-create a copy of the allSongs array without
-mutating the original. This is where the
-spread operator comes in handy.
-The spread operator (...) allows you to
-copy all elements from one array into
-another. It can also be used to
-concatenate multiple arrays into one. */
-let userData = {
-  songs: [...allSongs],
-  currentSong: null,
-  songCurrentTime: 0,
-};
-//
 
 /* to display the songs in the UI. To do this,
 you'll create a renderSongs function using the
@@ -438,12 +484,12 @@ const renderSongs = (array) => {
 
  return `
       <li id="song-${song.id}" class="playlist-song">
-      <button class="playlist-song-info" onclick="playSong(${song.id})" onclick="deleteSong(${song.id})">
+      <button class="playlist-song-info" onclick="playSong(${song.id})">
           <span class="playlist-song-title">${song.title}</span>
           <span class="playlist-song-artist">${song.artist}</span>
           <span class="playlist-song-duration">${song.duration}</span>
       </button>
-      <button class="playlist-song-delete" aria-label="Delete ${song.title}">
+      <button class="playlist-song-delete" onclick="deleteSong(${song.id})" aria-label="Delete ${song.title}">
           <svg width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="8" fill="#4d4d62"/>
           <path fill-rule="evenodd" clip-rule="evenodd" d="M5.32587 5.18571C5.7107 4.90301 6.28333 4.94814 6.60485 5.28651L8 6.75478L9.39515 5.28651C9.71667 4.94814 10.2893 4.90301 10.6741 5.18571C11.059 5.4684 11.1103 5.97188 10.7888 6.31026L9.1832 7.99999L10.7888 9.68974C11.1103 10.0281 11.059 10.5316 10.6741 10.8143C10.2893 11.097 9.71667 11.0519 9.39515 10.7135L8 9.24521L6.60485 10.7135C6.28333 11.0519 5.7107 11.097 5.32587 10.8143C4.94102 10.5316 4.88969 10.0281 5.21121 9.68974L6.8168 7.99999L5.21122 6.31026C4.8897 5.97188 4.94102 5.4684 5.32587 5.18571Z" fill="white"/></svg>
         </button>
@@ -559,6 +605,43 @@ listener must be either a null, an object with a
 handleEvent() method or a JavaScript funtion
 in this case, its a javaScript function */
 shuffleButton.addEventListener("click", shuffle);
+//
+
+/*Event listener, automatically play next song
+when current songs ends playing
+we add this event listener to the audio element,
+which listens for ended event*/
+audio.addEventListener("ended", () => {
+  /*next check if there is next song
+  to be played*/
+  /*first we call getCurrentSongIndex() function
+  to retrive currently playing song, and the
+  varlue returned is saved to the variable currentSongIndex*/
+  const currentSongIndex = getCurrentSongIndex();
+  /* we comparision, checks if the incremented index +1
+  is less the totalt song in userData.songs
+  if its, that means that there is a next song available to
+  be played, the value to be stored in nextSongExists
+  will be either true or false*/
+  const nextSongExists = currentSongIndex + 1 < userData.songs.length;
+  
+  /*if statement to check nextSongExist
+  if the condition is true, then the playNextSong()
+  function will be called */
+  if(nextSongExists) {
+    playNextSong();
+  } else {
+    userData.currentSong = null;
+    userData.songCurrentTime =  0;
+
+    /*function calls to update the music player*/
+    pauseSong();
+    setPlayerDisplay();
+    highlightCurrentSong();
+    setPlayButtonAccessibleText();
+  }
+  
+})
 
 
 /* when you call the renderSongs function,
